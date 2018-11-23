@@ -25,6 +25,11 @@ public class ServerChat extends javax.swing.JFrame
 		Socket sock;
 		PrintWriter client;
 
+		/**
+		 * open a chat for a new user
+		 * @param clientSocket
+		 * @param user
+		 */
 		public ClientHandler(Socket clientSocket, PrintWriter user) 
 		{
 			client = user;
@@ -40,6 +45,11 @@ public class ServerChat extends javax.swing.JFrame
 			}
 		}
 		@Override
+		/**
+		 *for each message that the client sent if its not empty the function trying to sent the message
+		 *to the other clients, if he succeeded the message will appear on the clients chat window
+		 *else it will send an error message.
+		 */
 		public void run() 
 		{
 			String stream, done = "Done", connect = "Connect", disconnect = "Disconnect", chat = "Chat";
@@ -85,14 +95,164 @@ public class ServerChat extends javax.swing.JFrame
 			} 
 		}
 	}
+	/**
+	 * when the server press the send button this function will try to sent the 
+	 * message to all the clients if its succeeded the message will appear on the clients chat window
+	 *else it will send an error message.
+	 * @param evt
+	 */
 
+	private void b_sendActionPerformed(java.awt.event.ActionEvent evt) {        
+		String nothing = "";
+		if ((b_sendText.getText()).equals(nothing)) {
+			b_sendText.setText("");
+			b_sendText.requestFocus();
+		}
+		else {
+			try {
+				tellEveryone("Server" + ":" + b_sendText.getText() + ":" + "Chat");
+				writer.flush(); // flushes the buffer
+			} catch (Exception ex) {
+			}
+			b_sendText.setText("");
+			b_sendText.requestFocus();
+		}
+
+		b_sendText.setText("");
+		b_sendText.requestFocus();
+
+	}  
+	private void b_sendTextActionPerformed(java.awt.event.ActionEvent evt) {                                             
+	}  
+	private void b_endActionPerformed(java.awt.event.ActionEvent evt) {
+		try 
+		{
+			Thread.sleep(5000);
+		} 
+		catch(InterruptedException ex) {Thread.currentThread().interrupt();}
+		tellEveryone("Server:is stopping and all users will be disconnected.\n:Chat");
+		ta_chat.append("Server stopping... \n");
+		ta_chat.setText("");
+	}
+	private void b_startActionPerformed(java.awt.event.ActionEvent evt) {
+		Thread starter = new Thread(new ServerStart());
+		starter.start();
+		ta_chat.append("Server started...\n");
+	}
+	public void b_usersActionPerformed(java.awt.event.ActionEvent evt) {
+		ta_chat.append("\n Online users : \n");
+		Iterator<String> It = this.iteretor();
+		while(It.hasNext()) {
+			ta_chat.append(It.next());
+			ta_chat.append("\n");
+		}
+	}
+
+	private void b_clearActionPerformed(java.awt.event.ActionEvent evt) {
+		ta_chat.setText("");
+	}
+	public static void main(String args[]) 
+	{
+		java.awt.EventQueue.invokeLater(new Runnable() 
+		{
+			@Override
+			public void run() {
+				new ServerChat().setVisible(true);
+			}
+		});
+	}
+	public class ServerStart implements Runnable 
+	{
+		/**
+		 * when a new client want to cunnect we create a new server socket with the port "2222"
+		 * if the connection is successful the message "Got a connection." will appear,
+		 * else is will send the message "Error making a connection."
+		 */
+		@Override
+		public void run() 
+		{
+			clientOutputStreams = new ArrayList();
+			users = new ArrayList();  
+			try 
+			{
+				ServerSocket serverSock = new ServerSocket(2222);
+				while (true) 
+				{
+					Socket clientSock = serverSock.accept();
+					PrintWriter writer = new PrintWriter(clientSock.getOutputStream());
+					clientOutputStreams.add(writer);
+
+					Thread listener = new Thread(new ClientHandler(clientSock, writer));
+					listener.start();
+					ta_chat.append("Got a connection. \n");
+				}
+			}
+			catch (Exception ex)
+			{
+				ta_chat.append("Error making a connection. \n");
+			}
+		}
+	}
+	public void userAdd (String data) 
+	{
+		String message, add = ": :Connect", done = "Server: :Done", name = data;
+		ta_chat.append("Before " + name + " added. \n");
+		users.add(name);
+		ta_chat.append("After " + name + " added. \n");
+		String[] tempList = new String[(users.size())];
+		users.toArray(tempList);
+		for (String token:tempList) 
+		{
+			message = (token + add);
+			tellEveryone(message);
+		}
+		tellEveryone(done);
+	}  
+	public void userRemove (String data) 
+	{
+		String message, add = ": :Connect", done = "Server: :Done", name = data;
+		users.remove(name);
+		String[] tempList = new String[(users.size())];
+		users.toArray(tempList);
+		for (String token:tempList) 
+		{
+			message = (token + add);
+			tellEveryone(message);
+		}
+		tellEveryone(done);
+	} 
+	/**
+	 * When a client wants to send a message to all connected client and not to a specific client.
+	 * @param message
+	 */
+	public void tellEveryone(String message) 
+	{
+		Iterator it = clientOutputStreams.iterator();
+		while (it.hasNext()) 
+		{
+			try 
+			{
+				PrintWriter writer = (PrintWriter) it.next();
+				writer.println(message);
+				ta_chat.append("Sending: " + message + "\n");
+				writer.flush();
+				ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
+
+			} 
+			catch (Exception ex) 
+			{
+				ta_chat.append("Error telling everyone. \n");
+			}
+		} 
+	}
 	public ServerChat() 
 	{
 		initComponents();
 	}
-
+	/**
+	 * GUI
+	 */
 	@SuppressWarnings("unchecked")
-
 	private void initComponents() {
 		jScrollPane1 = new javax.swing.JScrollPane();
 		ta_chat = new javax.swing.JTextArea();
@@ -105,7 +265,7 @@ public class ServerChat extends javax.swing.JFrame
 		lb_name = new javax.swing.JLabel();
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
+		setTitle("Server Chat");
 		ta_chat.setColumns(20);
 		ta_chat.setRows(5);
 		jScrollPane1.setViewportView(ta_chat);
@@ -196,141 +356,6 @@ public class ServerChat extends javax.swing.JFrame
 				);
 
 		pack();
-	}
-	private void b_sendActionPerformed(java.awt.event.ActionEvent evt) {        
-		String nothing = "";
-		if ((b_sendText.getText()).equals(nothing)) {
-			b_sendText.setText("");
-			b_sendText.requestFocus();
-		}
-		else {
-			try {
-				tellEveryone("Server" + ":" + b_sendText.getText() + ":" + "Chat");
-				writer.flush(); // flushes the buffer
-			} catch (Exception ex) {
-			}
-			b_sendText.setText("");
-			b_sendText.requestFocus();
-		}
-
-		b_sendText.setText("");
-		b_sendText.requestFocus();
-
-	}  
-	private void b_sendTextActionPerformed(java.awt.event.ActionEvent evt) {                                             
-	}  
-	private void b_endActionPerformed(java.awt.event.ActionEvent evt) {
-		try 
-		{
-			Thread.sleep(5000);
-		} 
-		catch(InterruptedException ex) {Thread.currentThread().interrupt();}
-		tellEveryone("Server:is stopping and all users will be disconnected.\n:Chat");
-		ta_chat.append("Server stopping... \n");
-		ta_chat.setText("");
-	}
-	private void b_startActionPerformed(java.awt.event.ActionEvent evt) {
-		Thread starter = new Thread(new ServerStart());
-		starter.start();
-		ta_chat.append("Server started...\n");
-	}
-	public void b_usersActionPerformed(java.awt.event.ActionEvent evt) {
-		ta_chat.append("\n Online users : \n");
-		Iterator<String> It = this.iteretor();
-		while(It.hasNext()) {
-			ta_chat.append(It.next());
-			ta_chat.append("\n");
-		}
-	}
-
-	private void b_clearActionPerformed(java.awt.event.ActionEvent evt) {
-		ta_chat.setText("");
-	}
-	public static void main(String args[]) 
-	{
-		java.awt.EventQueue.invokeLater(new Runnable() 
-		{
-			@Override
-			public void run() {
-				new ServerChat().setVisible(true);
-			}
-		});
-	}
-	public class ServerStart implements Runnable 
-	{
-		@Override
-		public void run() 
-		{
-			clientOutputStreams = new ArrayList();
-			users = new ArrayList();  
-			try 
-			{
-				ServerSocket serverSock = new ServerSocket(2222);
-				while (true) 
-				{
-					Socket clientSock = serverSock.accept();
-					PrintWriter writer = new PrintWriter(clientSock.getOutputStream());
-					clientOutputStreams.add(writer);
-
-					Thread listener = new Thread(new ClientHandler(clientSock, writer));
-					listener.start();
-					ta_chat.append("Got a connection. \n");
-				}
-			}
-			catch (Exception ex)
-			{
-				ta_chat.append("Error making a connection. \n");
-			}
-		}
-	}
-	public void userAdd (String data) 
-	{
-		String message, add = ": :Connect", done = "Server: :Done", name = data;
-		ta_chat.append("Before " + name + " added. \n");
-		users.add(name);
-		ta_chat.append("After " + name + " added. \n");
-		String[] tempList = new String[(users.size())];
-		users.toArray(tempList);
-		for (String token:tempList) 
-		{
-			message = (token + add);
-			tellEveryone(message);
-		}
-		tellEveryone(done);
-	}  
-	public void userRemove (String data) 
-	{
-		String message, add = ": :Connect", done = "Server: :Done", name = data;
-		users.remove(name);
-		String[] tempList = new String[(users.size())];
-		users.toArray(tempList);
-		for (String token:tempList) 
-		{
-			message = (token + add);
-			tellEveryone(message);
-		}
-		tellEveryone(done);
-	} 
-	public void tellEveryone(String message) 
-	{
-		Iterator it = clientOutputStreams.iterator();
-
-		while (it.hasNext()) 
-		{
-			try 
-			{
-				PrintWriter writer = (PrintWriter) it.next();
-				writer.println(message);
-				ta_chat.append("Sending: " + message + "\n");
-				writer.flush();
-				ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
-
-			} 
-			catch (Exception ex) 
-			{
-				ta_chat.append("Error telling everyone. \n");
-			}
-		} 
 	}
 	private javax.swing.JButton b_send;
 	private javax.swing.JTextField b_sendText;

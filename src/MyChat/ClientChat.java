@@ -2,6 +2,13 @@ package MyChat;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+
+/**
+* this is the link to the source code.
+* https://drive.google.com/drive/folders/0B4fPeBZJ1d19WkR3blE4ZVNTams
+* @author Or&Yaara&Omer
+*
+*/
 public class ClientChat extends javax.swing.JFrame 
 {
 	public String username;
@@ -23,7 +30,7 @@ public class ClientChat extends javax.swing.JFrame
 	}
 
 	/**
-	 * founction Thread start The Server
+	 * Function Thread start The Server
 	 */
 	public void ListenThread() 
 	{
@@ -34,6 +41,11 @@ public class ClientChat extends javax.swing.JFrame
 	{
 		whoIsOnline=new ArrayList<String>(users);
 	}
+	/**
+	 * when the user press the disconnect button the function will try to sent to the 
+	 * other users that a particular client is disconnected and if sending the message failed
+	 * its send "Could not send Disconnect message."
+	 */
 	public void sendDisconnect() 
 	{
 		String bye = (username + ": :Disconnect");
@@ -46,6 +58,10 @@ public class ClientChat extends javax.swing.JFrame
 			ta_chat.append("Could not send Disconnect message.\n");
 		}
 	}
+	/**
+	 * When the user press the disconnect button the function closes the connection and send to the other
+	 * users a message that the user disconnect
+	 */
 	public void Disconnect() 
 	{
 		try 
@@ -64,6 +80,11 @@ public class ClientChat extends javax.swing.JFrame
 	}
 	public class IncomingReader implements Runnable
 	{
+		/**
+		 * if the user want to sent a private message to another client he need to write "@ " and 
+		 * the name of the client to whom he wants to send the message and after that he can write 
+		 * the  message he want.
+		 */	
 		@Override
 		public void run() 
 		{
@@ -114,16 +135,17 @@ public class ClientChat extends javax.swing.JFrame
 
 		}
 	}
-
-
-	//gui
-
-
 	private void tf_addressActionPerformed(java.awt.event.ActionEvent evt) {
 
 	}
 	private void tf_usernameActionPerformed(java.awt.event.ActionEvent evt) {   
 	}
+	/**
+	 * when a new user want to connect he need to enter his name and then the function
+	 * will try to connect, if its succeed we print to the screen that the new client
+	 * is now connected, otherwise we print the connected has failed.
+	 * @param evt
+	 */
 	private void b_connectActionPerformed(java.awt.event.ActionEvent evt) {
 		if (isConnected == false) 
 		{
@@ -157,6 +179,12 @@ public class ClientChat extends javax.swing.JFrame
 		sendDisconnect();
 		Disconnect();
 	}
+	/**
+	 * When the user press the Online users button, its print to his
+	 * screen the message "Online users" and the list of all the
+	 * users that connected.
+	 * @param evt
+	 */
 	private void b_usersActionPerformed(java.awt.event.ActionEvent evt) {
 		if (isConnected == false) {
 			ta_chat.append("you are not online");
@@ -180,6 +208,11 @@ public class ClientChat extends javax.swing.JFrame
 				}
 			}
 	}
+	/**
+	 * When the user press the send button, its print to everyone
+	 * screen the message .
+	 * @param evt
+	 */
 	private void b_sendActionPerformed(java.awt.event.ActionEvent evt) {
 		String nothing = "";
 		if ((tf_chat.getText()).equals(nothing)) {
@@ -210,6 +243,9 @@ public class ClientChat extends javax.swing.JFrame
 			}
 		});
 	}
+	/**
+	 * GUI
+	 */
 	@SuppressWarnings("unchecked")
 	private void initComponents() {
 		lb_address = new javax.swing.JLabel();
@@ -225,7 +261,7 @@ public class ClientChat extends javax.swing.JFrame
 		lb_name = new javax.swing.JLabel();
 		b_users = new javax.swing.JButton();
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-		setTitle("Chat - Client's frame");
+		setTitle("Client Chat");
 		setName("client"); // NOI18N
 		setResizable(false);
 		lb_address.setText("Address : ");

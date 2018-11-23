@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"MyChat","l":"ClientChat"},{"p":"MyChat","l":"ClientChat.IncomingReader"},{"p":"MyChat","l":"ServerChat"},{"p":"MyChat","l":"ServerChat.ClientHandler"},{"p":"MyChat","l":"ServerChat.ServerStart"}]
